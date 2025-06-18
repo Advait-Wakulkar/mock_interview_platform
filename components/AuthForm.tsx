@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import Image from "next/image"
-
 import { Button } from "@/components/ui/button"
 import {
   Form
@@ -25,7 +24,7 @@ const authFormSchema = (type : FormType) => {
 export function AuthForm({type} : {type : FormType}) {
 
   const formSchema = authFormSchema(type)
-  
+
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
