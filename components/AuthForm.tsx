@@ -7,36 +7,52 @@ import Image from "next/image"
 
 import { Button } from "@/components/ui/button"
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
+  Form
 } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
+import Link from "next/link"
+import { toast } from "sonner"
+import FormField from "./FormField"
+import { useRouter } from "next/navigation"
 
-const formSchema = z.object({
-  username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
-  }),
-})
+const authFormSchema = (type : FormType) => {
+  return z.object({
+    name : type === 'sign-up' ? z.string().min(6) : z.string(),
+    email : z.string().email(),
+    password : z.string().min(12)
+  })
+}
 
-export function AuthForm() {
+export function AuthForm({type} : {type : FormType}) {
+
+  const formSchema = authFormSchema(type)
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      name: "",
+      email : "",
+      password : ""
     },
   })
- 
+
+  const router = useRouter()
+  const isSignIn = type === 'sign-in'
+
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values)
+    try {
+      if (type === 'sign-up'){
+        toast.success("Account created successfully!! Please sign in ")
+        router.push('/sign-in')
+        
+      }else{
+        toast.success("SIGNED IN")
+        router.push('/')
+      }
+    }catch(error){
+      console.log(error)
+      toast.error(`There was an error , ${error}`)
+    }
   }
 
   return (
@@ -45,30 +61,37 @@ export function AuthForm() {
       <div className="flex flex-row gap-2 justify-center">
         <Image src="/logo.svg" alt="logo" height={32} width={38}></Image>
         <h2>Inprep</h2>
-      </div>
-      <h3>Practise Job Interview with AI</h3>
     </div>
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6 mt-4 form">
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input placeholder="shadcn" {...field} />
-              </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit">Submit</Button>
+        {!isSignIn && 
+        <FormField 
+        control={form.control} 
+        name="name" label="Name" 
+        placeholder="Your name">
+          </FormField>}
+        <FormField 
+        control={form.control} 
+        name="email" label="Email" 
+        placeholder="Your email"
+        type="email">
+          </FormField>
+        <FormField 
+        control={form.control} 
+        name="password" label="Password" 
+        placeholder="Your password"
+        type="password">
+          </FormField>
+        <Button className="btn" type="submit">{isSignIn ? 'Sign in' : 'Create an account'}</Button>
       </form>
     </Form>
+    <p className="text-center">
+      {isSignIn ? 'No account yet? ' : 'Already have an account? '}
+      <Link href={!isSignIn ? '/sign-in' : '/sign-up'} className="font-bold text-user-primary ml-1">
+      {!isSignIn ? "Sign in" : "Sign up"}
+      </Link>
+    </p>
+    </div>
   </div>
   )
 }
