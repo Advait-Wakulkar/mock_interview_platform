@@ -25,6 +25,7 @@ const authFormSchema = (type : FormType) => {
 export function AuthForm({type} : {type : FormType}) {
 
   const formSchema = authFormSchema(type)
+  
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
