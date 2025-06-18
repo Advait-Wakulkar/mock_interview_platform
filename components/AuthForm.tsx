@@ -64,6 +64,7 @@ export function AuthForm({type} : {type : FormType}) {
     </div>
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6 mt-4 form">
+        {/* used conditional rendering */}
         {!isSignIn && 
         <FormField 
         control={form.control} 
@@ -86,6 +87,7 @@ export function AuthForm({type} : {type : FormType}) {
       </form>
     </Form>
     <p className="text-center">
+      {/* used conditional rendering */}
       {isSignIn ? 'No account yet? ' : 'Already have an account? '}
       <Link href={!isSignIn ? '/sign-in' : '/sign-up'} className="font-bold text-user-primary ml-1">
       {!isSignIn ? "Sign in" : "Sign up"}
