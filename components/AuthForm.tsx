@@ -46,9 +46,10 @@ export function AuthForm() {
         <Image src="/logo.svg" alt="logo" height={32} width={38}></Image>
         <h2>Inprep</h2>
       </div>
+      <h3>Practise Job Interview with AI</h3>
     </div>
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6 mt-4 form">
         <FormField
           control={form.control}
           name="username"
