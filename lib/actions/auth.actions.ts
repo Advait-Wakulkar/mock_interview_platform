@@ -79,16 +79,9 @@ export async function signIn(params: SignInParams) {
       };
 
     await setSessionCookie(idToken);
-    
-    // ADD THIS RETURN STATEMENT - THIS IS THE MAIN BUG!
-    return {
-      success: true,
-      message: "Signed in successfully.",
-    };
-    
   } catch (error: any) {
-    console.log("Sign in error:", error); // Also add error logging here
-    
+    console.log("");
+
     return {
       success: false,
       message: "Failed to log into account. Please try again.",
