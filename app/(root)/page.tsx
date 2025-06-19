@@ -18,6 +18,7 @@ const HomePage = () => {
       </div>
       <Image src="/robot.png" alt='robo-dude' width={400} height={400} className='max-sm:hidden'></Image>
     </section>
+
     <section className='flex flex-col gap-6 mt-8'>
       <h2>Your Past Interviews</h2>
       <div className='interviews-section'>
@@ -26,14 +27,15 @@ const HomePage = () => {
         ))}
         {/* <p>You haven't taken any interviews yet.</p> */}
       </div>
-      <section className='flex flex-col gap-6 mt-8'>
-        <h2> Take an Interview</h2>
-        <div className='interviews section'>
-          {dummyInterviews.map((interview)=>(
+    </section>
+
+    <section className='flex flex-col gap-6 mt-8'>
+      <h2>Take an Interview</h2>
+      <div className='interviews-section'>
+        {dummyInterviews.map((interview)=>(
           <InterviewCard {... interview} key={interview.id}></InterviewCard>
         ))}
-        </div>
-      </section>
+      </div>
     </section>
     </>
   )
