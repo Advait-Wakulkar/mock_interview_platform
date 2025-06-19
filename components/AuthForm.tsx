@@ -8,6 +8,7 @@ import { auth } from "@/firebase/client";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 
 import {
   createUserWithEmailAndPassword,
@@ -24,12 +25,13 @@ const authFormSchema = (type: FormType) => {
   return z.object({
     name: type === "sign-up" ? z.string().min(3) : z.string().optional(),
     email: z.string().email(),
-    password: z.string().min(3),
+    password: z.string().min(6),
   });
 };
 
 const AuthForm = ({ type }: { type: FormType }) => {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const formSchema = authFormSchema(type);
   const form = useForm<z.infer<typeof formSchema>>({
@@ -42,6 +44,8 @@ const AuthForm = ({ type }: { type: FormType }) => {
   });
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    setIsLoading(true);
+    
     try {
       if (type === "sign-up") {
         const { name, email, password } = data;
@@ -56,10 +60,12 @@ const AuthForm = ({ type }: { type: FormType }) => {
           uid: userCredential.user.uid,
           name: name!,
           email,
-          password,
+          password: ""
         });
 
         if (!result.success) {
+          // Rollback on failure
+          await userCredential.user.delete();
           toast.error(result.message);
           return;
         }
@@ -76,22 +82,38 @@ const AuthForm = ({ type }: { type: FormType }) => {
         );
 
         const idToken = await userCredential.user.getIdToken();
-        if (!idToken) {
-          toast.error("Sign in Failed. Please try again.");
-          return;
-        }
-
-        await signIn({
+        
+        const result = await signIn({
           email,
           idToken,
         });
 
-        toast.success("Signed in successfully.");
-        router.push("/");
+        if (result?.success) {
+          toast.success("Signed in successfully.");
+          router.push("/");
+        } else {
+          toast.error(result?.message || "Sign in failed. Please try again.");
+        }
       }
-    } catch (error) {
-      console.log(error);
-      toast.error(`There was an error: ${error}`);
+    } catch (error: any) {
+      console.error("Auth error:", error);
+      
+      // Handle Firebase Auth errors
+      if (error.code === "auth/email-already-in-use") {
+        toast.error("This email is already registered. Please sign in.");
+      } else if (error.code === "auth/weak-password") {
+        toast.error("Password should be at least 6 characters.");
+      } else if (error.code === "auth/invalid-email") {
+        toast.error("Invalid email address.");
+      } else if (error.code === "auth/user-not-found") {
+        toast.error("No account found with this email.");
+      } else if (error.code === "auth/wrong-password" || error.code === "auth/invalid-credential") {
+        toast.error("Incorrect password. Please try again.");
+      } else {
+        toast.error("An error occurred. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -138,8 +160,13 @@ const AuthForm = ({ type }: { type: FormType }) => {
               type="password"
             />
 
-            <Button className="btn" type="submit">
-              {isSignIn ? "Sign In" : "Create an Account"}
+            <Button className="btn" type="submit" disabled={isLoading}>
+              {isLoading 
+                ? "Loading..." 
+                : isSignIn 
+                  ? "Sign In" 
+                  : "Create an Account"
+              }
             </Button>
           </form>
         </Form>
