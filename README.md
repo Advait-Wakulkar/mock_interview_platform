@@ -22,13 +22,14 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 ## Environment Variables
 
-This project expects a Vapi token to be available at build time. Create a `.env.local` file in the project root and define:
+This project expects a Vapi token and assistant ID to be available at build time. Create a `.env.local` file in the project root and define:
 
 ```env
 NEXT_PUBLIC_VAPI_WEB_TOKEN=your_vapi_token_here
+NEXT_PUBLIC_VAPI_ASSISTANT_ID=your_vapi_assistant_id_here
 ```
 
-The application will throw an error on startup if this variable is missing.
+The application will throw an error on startup if `NEXT_PUBLIC_VAPI_WEB_TOKEN` is missing. The call button will remain disabled without `NEXT_PUBLIC_VAPI_ASSISTANT_ID`.
 
 ## Learn More
 

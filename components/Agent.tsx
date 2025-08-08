@@ -31,10 +31,17 @@ const Agent = ({ userName }: AgentProps) => {
     const [messages, setMessages] = useState<string[]>([])
     const messagesEndRef = useRef<HTMLDivElement>(null)
 
+    const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID
+
     const startCall = async () => {
+        if (!assistantId) {
+            console.error('NEXT_PUBLIC_VAPI_ASSISTANT_ID is not set')
+            return
+        }
+
         try {
             setCallStatus(CallStatus.CONNECTING)
-            await vapi.start(process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || undefined)
+            await vapi.start(assistantId)
         } catch (error) {
             console.error(error)
             setCallStatus(CallStatus.INACTIVE)
@@ -130,7 +137,7 @@ const Agent = ({ userName }: AgentProps) => {
             </div>
             <div className='w-full flex justify-center'>
                 {callStatus !== CallStatus.ACTIVE ? (
-                    <button onClick={startCall} className='relative'>
+                    <button onClick={startCall} className='relative' disabled={!assistantId}>
                         <span
                             className={cn(
                                 'absolute animate-ping rounded-full opacity-75',
