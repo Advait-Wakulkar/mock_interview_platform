@@ -1,3 +1,5 @@
+"use client"
+
 import Image from 'next/image'
 import React, { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils' // Utility for conditional class names
@@ -49,6 +51,7 @@ const Agent = ({ userName }: AgentProps) => {
             setCallStatus(CallStatus.FINISHED)
         }
     }
+
     
     return (
         <>
@@ -96,12 +99,17 @@ const Agent = ({ userName }: AgentProps) => {
                             callStatus !== "CONNECTING" && 'hidden'
                         )}>
                         </span>
+
                         <span>
-                            {callStatus === CallStatus.INACTIVE || callStatus === CallStatus.FINISHED ? "CALL" : "..."}
+                            {callStatus === CallStatus.INACTIVE ||
+                            callStatus === CallStatus.FINISHED
+                                ? 'CALL'
+                                : '...'}
                         </span>
                     </button>
                 ) : (
                     <button className='relative btn-call' onClick={handleCallToggle}>
+
                         End
                     </button>
                 )}
