@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import React, { useEffect, useRef, useState } from 'react'
+
 import { cn } from '@/lib/utils' // Utility for conditional class names
 import { vapi } from '@/lib/vapi.sdk'
 
@@ -45,6 +46,7 @@ const Agent = ({ userName }: AgentProps) => {
         setCallStatus(CallStatus.FINISHED)
     }
 
+
     useEffect(() => {
         const handleCallStart = () => setCallStatus(CallStatus.ACTIVE)
         const handleCallEnd = () => setCallStatus(CallStatus.FINISHED)
@@ -63,6 +65,7 @@ const Agent = ({ userName }: AgentProps) => {
         vapi.on('speech-end', handleSpeechEnd)
         vapi.on('message', handleMessage)
 
+
         return () => {
             vapi.removeListener('call-start', handleCallStart)
             vapi.removeListener('call-end', handleCallEnd)
@@ -75,6 +78,7 @@ const Agent = ({ userName }: AgentProps) => {
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }, [messages])
+
 
     return (
         <>
@@ -133,6 +137,7 @@ const Agent = ({ userName }: AgentProps) => {
                                 callStatus !== CallStatus.CONNECTING && 'hidden',
                             )}
                         ></span>
+
                         <span>
                             {callStatus === CallStatus.INACTIVE ||
                             callStatus === CallStatus.FINISHED
@@ -142,6 +147,7 @@ const Agent = ({ userName }: AgentProps) => {
                     </button>
                 ) : (
                     <button onClick={endCall} className='relative btn-call'>
+
                         End
                     </button>
                 )}
