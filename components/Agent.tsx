@@ -1,6 +1,9 @@
+"use client"
+
 import Image from 'next/image'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils' // Utility for conditional class names
+import { vapi } from '@/lib/vapi.sdk'
 
 enum CallStatus {
     INACTIVE = 'INACTIVE',
@@ -14,12 +17,58 @@ interface AgentProps {
 }
 
 const Agent = ({ userName }: AgentProps) => {
-    const callStatus = CallStatus.ACTIVE
-    const isSpeaking = true
-    const messages = ["What's Your Name", 
-        "My name is John Doe, nice to meet you."
-    ]
+    const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE)
+    const [isSpeaking, setIsSpeaking] = useState(false)
+    const [messages, setMessages] = useState<string[]>([])
+
     const lastMessage = messages[messages.length - 1]
+
+    const startCall = async () => {
+        try {
+            setCallStatus(CallStatus.CONNECTING)
+            await vapi.start(process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || undefined)
+        } catch (error) {
+            console.error(error)
+            setCallStatus(CallStatus.INACTIVE)
+        }
+    }
+
+    const endCall = () => {
+        vapi.stop()
+        setCallStatus(CallStatus.FINISHED)
+    }
+
+    useEffect(() => {
+        const handleCallStart = () => setCallStatus(CallStatus.ACTIVE)
+        const handleCallEnd = () => setCallStatus(CallStatus.FINISHED)
+        const handleSpeechStart = () => setIsSpeaking(true)
+        const handleSpeechEnd = () => setIsSpeaking(false)
+        const handleMessage = (message: Message) => {
+            if (
+                message.type === 'transcript' &&
+                message.transcriptType === 'final'
+            ) {
+                setMessages((prev) => [...prev, message.transcript])
+            }
+            if (message.type === 'function-call') {
+                // Handle function-call messages if needed
+            }
+        }
+
+        vapi.on('call-start', handleCallStart)
+        vapi.on('call-end', handleCallEnd)
+        vapi.on('speech-start', handleSpeechStart)
+        vapi.on('speech-end', handleSpeechEnd)
+        vapi.on('message', handleMessage)
+
+        return () => {
+            vapi.removeListener('call-start', handleCallStart)
+            vapi.removeListener('call-end', handleCallEnd)
+            vapi.removeListener('speech-start', handleSpeechStart)
+            vapi.removeListener('speech-end', handleSpeechEnd)
+            vapi.removeListener('message', handleMessage)
+        }
+    }, [])
     
     return (
         <>
@@ -62,17 +111,22 @@ const Agent = ({ userName }: AgentProps) => {
             </div>
             <div className='w-full flex justify-center'>
                 {callStatus !== CallStatus.ACTIVE ? (
-                    <button className='relative'>
-                        <span className={cn('absolute animate-ping rounded-full opacity-75',
-                            callStatus !== "CONNECTING" && 'hidden'
-                        )}>
-                        </span>
+                    <button onClick={startCall} className='relative'>
+                        <span
+                            className={cn(
+                                'absolute animate-ping rounded-full opacity-75',
+                                callStatus !== CallStatus.CONNECTING && 'hidden',
+                            )}
+                        ></span>
                         <span>
-                            {callStatus === CallStatus.INACTIVE || callStatus === CallStatus.FINISHED ? "CALL" : "..."}
+                            {callStatus === CallStatus.INACTIVE ||
+                            callStatus === CallStatus.FINISHED
+                                ? 'CALL'
+                                : '...'}
                         </span>
                     </button>
                 ) : (
-                    <button className='relative btn-call'>
+                    <button onClick={endCall} className='relative btn-call'>
                         End
                     </button>
                 )}
