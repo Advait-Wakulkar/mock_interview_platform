@@ -20,6 +20,16 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Environment Variables
+
+This project expects a Vapi token to be available at build time. Create a `.env.local` file in the project root and define:
+
+```env
+NEXT_PUBLIC_VAPI_WEB_TOKEN=your_vapi_token_here
+```
+
+The application will throw an error on startup if this variable is missing.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
