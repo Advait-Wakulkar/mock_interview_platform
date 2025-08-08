@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import React from 'react'
-import { cn } from '@/lib/utils' // Add this import for cn function
+import { cn } from '@/lib/utils' // Utility for conditional class names
 
 enum CallStatus {
     INACTIVE = 'INACTIVE',
