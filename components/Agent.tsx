@@ -1,6 +1,9 @@
+"use client"
+
 import Image from 'next/image'
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils' // Utility for conditional class names
+import { vapi } from '@/lib/vapi.sdk'
 
 enum CallStatus {
     INACTIVE = 'INACTIVE',
@@ -16,10 +19,31 @@ interface AgentProps {
 const Agent = ({ userName }: AgentProps) => {
     const callStatus = CallStatus.ACTIVE
     const isSpeaking = true
-    const messages = ["What's Your Name", 
-        "My name is John Doe, nice to meet you."
-    ]
-    const lastMessage = messages[messages.length - 1]
+    const [messages, setMessages] = useState<string[]>([])
+    const messagesEndRef = useRef<HTMLDivElement>(null)
+
+    interface TranscriptMessage {
+        type: 'transcript'
+        transcript: string
+        transcriptType: 'partial' | 'final'
+    }
+
+    useEffect(() => {
+        const handleMessage = (message: TranscriptMessage) => {
+            if (message.type === 'transcript' && message.transcriptType === 'final') {
+                setMessages((prev) => [...prev, message.transcript])
+            }
+        }
+
+        vapi.on('message', handleMessage)
+        return () => {
+            vapi.removeListener('message', handleMessage)
+        }
+    }, [])
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }, [messages])
     
     return (
         <>
@@ -54,10 +78,13 @@ const Agent = ({ userName }: AgentProps) => {
             <div>
                 {messages.length > 0 && (
                     <div className='transcript-border'>
-                        <p key={lastMessage} className={cn('transition-opacity duration-500 opacity-0', 'animate-fadeIn opacity-100')}>
-                            {lastMessage}
-                        </p>
-                        </div>
+                        {messages.map((msg, index) => (
+                            <p key={index} className={cn('transition-opacity duration-500 opacity-0', 'animate-fadeIn opacity-100')}>
+                                {msg}
+                            </p>
+                        ))}
+                        <div ref={messagesEndRef}></div>
+                    </div>
                 )}
             </div>
             <div className='w-full flex justify-center'>
