@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 
 import FormField from "./FormField";
 import { signIn, signUp } from "@/lib/actions/auth.actions";
+import type { FirebaseError } from "firebase/app";
 
 const authFormSchema = (type: FormType) => {
   return z.object({
@@ -95,19 +96,24 @@ const AuthForm = ({ type }: { type: FormType }) => {
           toast.error(result?.message || "Sign in failed. Please try again.");
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Auth error:", error);
-      
+
+      const firebaseError = error as FirebaseError;
+
       // Handle Firebase Auth errors
-      if (error.code === "auth/email-already-in-use") {
+      if (firebaseError.code === "auth/email-already-in-use") {
         toast.error("This email is already registered. Please sign in.");
-      } else if (error.code === "auth/weak-password") {
+      } else if (firebaseError.code === "auth/weak-password") {
         toast.error("Password should be at least 6 characters.");
-      } else if (error.code === "auth/invalid-email") {
+      } else if (firebaseError.code === "auth/invalid-email") {
         toast.error("Invalid email address.");
-      } else if (error.code === "auth/user-not-found") {
+      } else if (firebaseError.code === "auth/user-not-found") {
         toast.error("No account found with this email.");
-      } else if (error.code === "auth/wrong-password" || error.code === "auth/invalid-credential") {
+      } else if (
+        firebaseError.code === "auth/wrong-password" ||
+        firebaseError.code === "auth/invalid-credential"
+      ) {
         toast.error("Incorrect password. Please try again.");
       } else {
         toast.error("An error occurred. Please try again.");

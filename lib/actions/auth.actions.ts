@@ -48,7 +48,7 @@ export async function signUp(params: SignUpParams) {
       success: true,
       message: "Account created successfully. Please sign in.",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating user:", error);
 
     return {
@@ -84,7 +84,7 @@ export async function signIn(params: SignInParams) {
       success: true,
       message: "Signed in successfully",
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Sign in error:", error);
 
     return {
@@ -121,7 +121,7 @@ export async function getCurrentUser(): Promise<User | null> {
       ...userRecord.data(),
       id: userRecord.id,
     } as User;
-  } catch (error) {
+  } catch {
     // Invalid or expired session
     return null;
   }
