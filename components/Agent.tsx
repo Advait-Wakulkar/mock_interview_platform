@@ -1,6 +1,7 @@
 import Image from 'next/image'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils' // Utility for conditional class names
+import { vapi } from '@/lib/vapi.sdk'
 
 enum CallStatus {
     INACTIVE = 'INACTIVE',
@@ -14,12 +15,40 @@ interface AgentProps {
 }
 
 const Agent = ({ userName }: AgentProps) => {
-    const callStatus = CallStatus.ACTIVE
+    const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE)
     const isSpeaking = true
-    const messages = ["What's Your Name", 
+    const messages = ["What's Your Name",
         "My name is John Doe, nice to meet you."
     ]
     const lastMessage = messages[messages.length - 1]
+
+    useEffect(() => {
+        const handleCallStart = () => setCallStatus(CallStatus.ACTIVE)
+        const handleCallEnd = () => setCallStatus(CallStatus.FINISHED)
+
+        vapi.on('call-start', handleCallStart)
+        vapi.on('call-end', handleCallEnd)
+
+        return () => {
+            vapi.removeListener('call-start', handleCallStart)
+            vapi.removeListener('call-end', handleCallEnd)
+        }
+    }, [])
+
+    const handleCallToggle = async () => {
+        if (callStatus === CallStatus.INACTIVE || callStatus === CallStatus.FINISHED) {
+            setCallStatus(CallStatus.CONNECTING)
+            try {
+                await vapi.start()
+            } catch (error) {
+                console.error(error)
+                setCallStatus(CallStatus.INACTIVE)
+            }
+        } else if (callStatus === CallStatus.ACTIVE) {
+            vapi.stop()
+            setCallStatus(CallStatus.FINISHED)
+        }
+    }
     
     return (
         <>
@@ -62,7 +91,7 @@ const Agent = ({ userName }: AgentProps) => {
             </div>
             <div className='w-full flex justify-center'>
                 {callStatus !== CallStatus.ACTIVE ? (
-                    <button className='relative'>
+                    <button className='relative' onClick={handleCallToggle}>
                         <span className={cn('absolute animate-ping rounded-full opacity-75',
                             callStatus !== "CONNECTING" && 'hidden'
                         )}>
@@ -72,7 +101,7 @@ const Agent = ({ userName }: AgentProps) => {
                         </span>
                     </button>
                 ) : (
-                    <button className='relative btn-call'>
+                    <button className='relative btn-call' onClick={handleCallToggle}>
                         End
                     </button>
                 )}
